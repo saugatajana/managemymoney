@@ -3,9 +3,7 @@ package com.anw.managemymoney.util;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import org.apache.commons.lang3.StringUtils;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,10 +17,12 @@ public class BankTransactionUtil {
 	 * @return date object
 	 */
 	public static Date getDateString(String dateString) {
+		if(!dateString.contains("/"))
+			return null;
 		try {
 			return formatter.parse(dateString);
 		} catch (ParseException e) {
-			log.error("BankTransactionUtil:getDateString - {} ", e);
+			log.error("BankTransactionUtil:getDateString - {} ", e.getMessage());
 		}
 		return null;
 	}
@@ -38,7 +38,7 @@ public class BankTransactionUtil {
 			if(StringUtils.isNotBlank(valString))
 				val = Double.parseDouble(valString);
 		} catch(Exception e) {
-			log.error("BankTransactionUtil:getDoubleValue - {}", e);
+			log.warn("BankTransactionUtil:getDoubleValue - {}", e.getMessage());
 		}
 		return val;
 	}

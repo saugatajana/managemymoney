@@ -1,5 +1,7 @@
 package com.anw.managemymoney.model;
 
+import java.math.BigDecimal;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,7 +13,7 @@ import lombok.ToString;
 @Setter
 public class BankStatementSummary {
 	
-	private double totalWithdrawalAmount;
-    private double totalDepositAmount;
+	private BigDecimal totalWithdrawalAmount;
+    private BigDecimal totalDepositAmount;
 
 }
