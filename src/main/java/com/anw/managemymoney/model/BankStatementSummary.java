@@ -1,6 +1,8 @@
 package com.anw.managemymoney.model;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,5 +17,7 @@ public class BankStatementSummary {
 	
 	private BigDecimal totalWithdrawalAmount;
     private BigDecimal totalDepositAmount;
+    private Map<String, BigDecimal> categoryTotalMap;
+    private Map<String , List<String>> transactionsMap;
 
 }

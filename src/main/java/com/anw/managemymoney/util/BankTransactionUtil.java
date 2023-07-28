@@ -43,4 +43,8 @@ public class BankTransactionUtil {
 		return val;
 	}
 	
+	public static void getCategory(String narration) {
+		log.info("Narration {}", narration);
+	}
+	
 }

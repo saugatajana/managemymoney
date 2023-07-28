@@ -1,7 +1,9 @@
 package com.anw.managemymoney.service.impl;
 
+import com.anw.managemymoney.enums.CategoryEnum;
 import com.anw.managemymoney.model.BankStatementSummary;
 import com.anw.managemymoney.model.BankTransaction;
+import com.anw.managemymoney.repository.impl.PropFileKeywordsRepository;
 import com.anw.managemymoney.service.BankStatementReaderService;
 import com.anw.managemymoney.util.BankTransactionUtil;
 import com.anw.managemymoney.util.FileReader;
@@ -9,14 +11,23 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class HDFCBankStatementReaderService implements BankStatementReaderService {
-
+	
+	private static final String SPACE = "---------";
+	
+	@Autowired
+	private PropFileKeywordsRepository keywordsRepository;
+	
 	@Override
 	public List<BankTransaction> getAllTransactions(MultipartFile file) throws IOException {
 		List<List<String>> rowLists = FileReader.readExcelFile(file);
@@ -58,8 +69,11 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 					else
 						colNo++;
 				}
-				if(Objects.nonNull(transaction.getDate()))
+				if(Objects.nonNull(transaction.getDate())) {
+					transaction.setCategory(null);
+					transaction.setCategory(getCategoryFromNarration(transaction.getNarration()));
 					bankTrans.add(transaction);
+				}
 			}
 		}
 		return bankTrans;
@@ -67,17 +81,59 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 
 	@Override
 	public BankStatementSummary getBankStatementSummary(List<BankTransaction> bankTrans) {
-		
-		double totalWithdrawl = 0;
+		Map<String, BigDecimal> categoryTotalMap = new HashMap<>();
+		Map<String, List<String>> transactionsMap = new HashMap<>();
+		BigDecimal totalWithdrawl = new BigDecimal("0");;
 		double totalDeposit = 0;
 		for(BankTransaction transaction : bankTrans) { 
-			totalWithdrawl += transaction.getWithdrawalAmount();			
+			BigDecimal withdrawlAmt = BigDecimal.valueOf(transaction.getWithdrawalAmount());
+			totalWithdrawl = totalWithdrawl.add(withdrawlAmt);			
 			totalDeposit += transaction.getDepositAmount();
+			String category = transaction.getCategory().getDisplayName();
+			if(withdrawlAmt.compareTo(BigDecimal.ZERO) > 0) {
+				if(!categoryTotalMap.containsKey(category))
+					categoryTotalMap.put(category, BigDecimal.ZERO);
+				categoryTotalMap.put(category, withdrawlAmt.add(categoryTotalMap.get(category)));
+				List<String> transList = transactionsMap.get(category);
+				if(CollectionUtils.isEmpty(transList)) {
+					transList = new ArrayList<>();
+				}
+				String tranNarration = transaction.getNarration() + SPACE
+						+ transaction.getValueDate() + SPACE 
+						+ transaction.getWithdrawalAmount();
+				transList.add(tranNarration);
+				transactionsMap.put(category, transList);
+			}
 		}
-		return BankStatementSummary.builder()
+		BankStatementSummary statementSummary = BankStatementSummary.builder()
 				.totalDepositAmount(BigDecimal.valueOf(totalDeposit).setScale(2, RoundingMode.HALF_UP))
-				.totalWithdrawalAmount(BigDecimal.valueOf(totalWithdrawl).setScale(2, RoundingMode.HALF_UP))
+				.totalWithdrawalAmount(totalWithdrawl.setScale(2, RoundingMode.HALF_UP))
+				.categoryTotalMap(categoryTotalMap)
+				.transactionsMap(transactionsMap)
 				.build();
+		
+		return statementSummary;
+	}
+
+	@Override
+	public CategoryEnum getCategoryFromNarration(String narration) {
+		Map<String, String> keywordsMap = keywordsRepository.getKeywordsMap("");
+		String lowercaseNarration = narration.toLowerCase();
+		for (Map.Entry<String, String> entry : keywordsMap.entrySet()) {
+            String category = entry.getKey();
+            String keywords = entry.getValue();
+
+            // Split the keywords for the category
+            String[] keywordArray = keywords.split(",");
+
+            // Check if any of the keywords match with the transaction
+            for (String keyword : keywordArray) {
+                if (lowercaseNarration.contains(keyword.trim().toLowerCase())) {
+                    return CategoryEnum.valueOf(category.toUpperCase());
+                }
+            }
+        }
+		return CategoryEnum.OTHERS;
 	}
 
 }
