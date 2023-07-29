@@ -10,7 +10,11 @@ import com.anw.managemymoney.model.BankTransaction;
 import com.anw.managemymoney.service.BankStatementReaderService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Controller
 public class BankStatementController {
@@ -32,8 +36,19 @@ public class BankStatementController {
 
             // Add the summary to the model to display on the web page
             model.addAttribute("statementSummary", summary);
+         // Extract month/year keys from categoryTotalMap and add them to the model
+            Set<String> monthYearKeys = extractMonthYearKeys(summary);
+            model.addAttribute("monthYearKeys", monthYearKeys);
         }
 
         return "upload";
+    }
+    
+    private Set<String> extractMonthYearKeys(BankStatementSummary statementSummary) {
+        Set<String> monthYearKeys = new HashSet<>();
+        for (Map<String, BigDecimal> innerMap : statementSummary.getCategoryTotalMap().values()) {
+            monthYearKeys.addAll(innerMap.keySet());
+        }
+        return monthYearKeys;
     }
 }

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BankTransactionUtil {
 	
 	private static SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yy");
+	private static SimpleDateFormat formatter1 = new SimpleDateFormat("MM/yy");
 	
 	/**
 	 * Accepts date string in dd/MM/yy format
@@ -25,6 +26,10 @@ public class BankTransactionUtil {
 			log.error("BankTransactionUtil:getDateString - {} ", e.getMessage());
 		}
 		return null;
+	}
+	
+	public static String getMonthYear(Date date) {
+		return formatter1.format(date);
 	}
 	
 	/**

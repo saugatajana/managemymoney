@@ -81,19 +81,27 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 
 	@Override
 	public BankStatementSummary getBankStatementSummary(List<BankTransaction> bankTrans) {
-		Map<String, BigDecimal> categoryTotalMap = new HashMap<>();
+		Map<String, Map<String, BigDecimal>> categoryTotalMap = new HashMap<>();
 		Map<String, List<String>> transactionsMap = new HashMap<>();
-		BigDecimal totalWithdrawl = new BigDecimal("0");;
+		BigDecimal totalWithdrawl = new BigDecimal("0");
 		double totalDeposit = 0;
+		
 		for(BankTransaction transaction : bankTrans) { 
 			BigDecimal withdrawlAmt = BigDecimal.valueOf(transaction.getWithdrawalAmount());
 			totalWithdrawl = totalWithdrawl.add(withdrawlAmt);			
 			totalDeposit += transaction.getDepositAmount();
+			Map<String, BigDecimal> categoryMonthlyMap = null;
 			String category = transaction.getCategory().getDisplayName();
 			if(withdrawlAmt.compareTo(BigDecimal.ZERO) > 0) {
-				if(!categoryTotalMap.containsKey(category))
-					categoryTotalMap.put(category, BigDecimal.ZERO);
-				categoryTotalMap.put(category, withdrawlAmt.add(categoryTotalMap.get(category)));
+				if(!categoryTotalMap.containsKey(category)) {
+					categoryMonthlyMap = new HashMap<>();
+					categoryTotalMap.put(category, categoryMonthlyMap);
+				} else
+					categoryMonthlyMap = categoryTotalMap.get(category);
+				String monthYear = BankTransactionUtil.getMonthYear(transaction.getValueDate());
+				if(!categoryMonthlyMap.containsKey(monthYear))
+					categoryMonthlyMap.put(monthYear, BigDecimal.ZERO);
+				categoryMonthlyMap.put(monthYear, withdrawlAmt.add(categoryMonthlyMap.get(monthYear)));
 				List<String> transList = transactionsMap.get(category);
 				if(CollectionUtils.isEmpty(transList)) {
 					transList = new ArrayList<>();
@@ -105,6 +113,7 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 				transactionsMap.put(category, transList);
 			}
 		}
+		
 		BankStatementSummary statementSummary = BankStatementSummary.builder()
 				.totalDepositAmount(BigDecimal.valueOf(totalDeposit).setScale(2, RoundingMode.HALF_UP))
 				.totalWithdrawalAmount(totalWithdrawl.setScale(2, RoundingMode.HALF_UP))

@@ -17,7 +17,7 @@ public class BankStatementSummary {
 	
 	private BigDecimal totalWithdrawalAmount;
     private BigDecimal totalDepositAmount;
-    private Map<String, BigDecimal> categoryTotalMap;
+    private Map<String, Map<String, BigDecimal>> categoryTotalMap;
     private Map<String , List<String>> transactionsMap;
 
 }
