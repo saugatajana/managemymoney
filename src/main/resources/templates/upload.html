@@ -71,10 +71,6 @@
         <input type="submit" value="Upload" />
     </form>
     <div th:if="${statementSummary != null}">
-        <h2>Statement Summary</h2>
-        <p>Total Withdrawal Amount: <span th:text="${statementSummary.totalWithdrawalAmount}" /></p>
-        <p>Total Deposit Amount: <span th:text="${statementSummary.totalDepositAmount}" /></p>
-        
         <h2>Category Totals</h2>
         <table>
             <tr>
@@ -94,6 +90,7 @@
 			        <span th:with="innerMap=${categoryEntry.value}">
 			            <span th:each="monthEntry : ${innerMap}">
 							<span th:if="${monthEntry.key == monthYear}">
+								<span>&#8377;</span>
 								<span th:text="${monthEntry.value}" />
 							</span>          
 			            </span>
@@ -110,6 +107,12 @@
                 </td>
             </tr>
         </table>
+        
+        
+        <h2>Statement Summary</h2>
+        <p>Total Withdrawal Amount: <span>&#8377;</span> <span th:text="${statementSummary.totalWithdrawalAmount}" /></p>
+        <p>Total Deposit Amount: <span>&#8377;</span> <span th:text="${statementSummary.totalDepositAmount}" /></p>
+        
     </div>
 
     <script>

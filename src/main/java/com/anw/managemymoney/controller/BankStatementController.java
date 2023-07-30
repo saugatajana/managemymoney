@@ -8,13 +8,12 @@ import org.springframework.web.multipart.MultipartFile;
 import com.anw.managemymoney.model.BankStatementSummary;
 import com.anw.managemymoney.model.BankTransaction;
 import com.anw.managemymoney.service.BankStatementReaderService;
-
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Controller
 public class BankStatementController {
@@ -45,7 +44,7 @@ public class BankStatementController {
     }
     
     private Set<String> extractMonthYearKeys(BankStatementSummary statementSummary) {
-        Set<String> monthYearKeys = new HashSet<>();
+        Set<String> monthYearKeys = new TreeSet<>();
         for (Map<String, BigDecimal> innerMap : statementSummary.getCategoryTotalMap().values()) {
             monthYearKeys.addAll(innerMap.keySet());
         }
