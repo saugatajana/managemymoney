@@ -86,19 +86,19 @@
                 <th>Transactions</th>
             </tr>
             <!-- Iterate through each category entry -->
-            <tr th:each="categoryEntry : ${statementSummary.categoryTotalMap}">
-                <td th:text="${categoryEntry.key}" />
-                <!-- Loop through the monthYearKeys again to find the total amount for each month/year -->
-                <td th:each="monthYear : ${monthYearKeys}">
-                    <!-- Use the #with directive to handle null values more gracefully -->
-                    <!-- Extract the inner map for the current category -->
-                    <!-- Use the monthYear as the key to get the total amount for the specific month/year -->
-                    <!-- Format the decimal value to two decimal places -->
-                        <span th:with="innerMap=${categoryEntry.value}">
-                        	<span th:text="${innerMap}" />
-                        	<span th:text="${monthYear}" />
-					    </span>
-                </td>
+            
+			<tr th:each="categoryEntry : ${statementSummary.categoryTotalMap}">
+			    <td th:text="${categoryEntry.key}" />
+			    <td th:each="monthYear : ${monthYearKeys}">
+			        <!-- Use the #with directive to handle null values more gracefully -->
+			        <span th:with="innerMap=${categoryEntry.value}">
+			            <span th:each="monthEntry : ${innerMap}">
+							<span th:if="${monthEntry.key == monthYear}">
+								<span th:text="${monthEntry.value}" />
+							</span>          
+			            </span>
+			        </span>
+			    </td>
                 <td>
                     <button th:attr="data-target='#transactions-' + ${categoryEntry.key}" onclick="toggleTransactions(this)">Show Transactions</button>
                     <ul class="transactions" th:id="'transactions-' + ${categoryEntry.key}">
