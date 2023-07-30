@@ -14,6 +14,7 @@ public enum CategoryEnum {
     CREDITCARD("creditcard"),
     VEHICLE("vehicle"),
     ATM("atm"),
+    GAS("gas"),
     OTHERS("others");
 
     private final String displayName;
