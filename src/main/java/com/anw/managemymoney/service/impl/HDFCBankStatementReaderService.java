@@ -95,7 +95,7 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 			String category = transaction.getCategory().getDisplayName();
 			if(withdrawlAmt.compareTo(BigDecimal.ZERO) > 0) {
 				populateTransactionMap(categoryTotalMap, categoryMonthlyMap, transactionsMap, category, transaction, withdrawlAmt);
-			} else if(!category.equals(CategoryEnum.OTHERS.getDisplayName()) && depositAmt.compareTo(BigDecimal.ZERO) > 0){
+			} else if(category.equals(CategoryEnum.DIVIDEND.getDisplayName()) && depositAmt.compareTo(BigDecimal.ZERO) > 0){
 				/** Income **/
 				populateTransactionMap(categoryTotalMap, categoryMonthlyMap, transactionsMap, category, transaction, depositAmt);
 			}
@@ -129,7 +129,7 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 		}
 		String tranNarration = transaction.getNarration() + SPACE
 				+ transaction.getValueDate() + SPACE 
-				+ transaction.getWithdrawalAmount();
+				+ amt;
 		transList.add(tranNarration);
 		transactionsMap.put(category, transList);
 	}
