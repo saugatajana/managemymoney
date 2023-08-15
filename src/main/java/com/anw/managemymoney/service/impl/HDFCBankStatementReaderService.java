@@ -88,29 +88,16 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 		
 		for(BankTransaction transaction : bankTrans) { 
 			BigDecimal withdrawlAmt = BigDecimal.valueOf(transaction.getWithdrawalAmount());
+			BigDecimal depositAmt = BigDecimal.valueOf(transaction.getDepositAmount());
 			totalWithdrawl = totalWithdrawl.add(withdrawlAmt);			
 			totalDeposit += transaction.getDepositAmount();
 			Map<String, BigDecimal> categoryMonthlyMap = null;
 			String category = transaction.getCategory().getDisplayName();
 			if(withdrawlAmt.compareTo(BigDecimal.ZERO) > 0) {
-				if(!categoryTotalMap.containsKey(category)) {
-					categoryMonthlyMap = new HashMap<>();
-					categoryTotalMap.put(category, categoryMonthlyMap);
-				} else
-					categoryMonthlyMap = categoryTotalMap.get(category);
-				String monthYear = BankTransactionUtil.getMonthYear(transaction.getValueDate());
-				if(!categoryMonthlyMap.containsKey(monthYear))
-					categoryMonthlyMap.put(monthYear, BigDecimal.ZERO);
-				categoryMonthlyMap.put(monthYear, withdrawlAmt.add(categoryMonthlyMap.get(monthYear)));
-				List<String> transList = transactionsMap.get(category);
-				if(CollectionUtils.isEmpty(transList)) {
-					transList = new ArrayList<>();
-				}
-				String tranNarration = transaction.getNarration() + SPACE
-						+ transaction.getValueDate() + SPACE 
-						+ transaction.getWithdrawalAmount();
-				transList.add(tranNarration);
-				transactionsMap.put(category, transList);
+				populateTransactionMap(categoryTotalMap, categoryMonthlyMap, transactionsMap, category, transaction, withdrawlAmt);
+			} else if(!category.equals(CategoryEnum.OTHERS.getDisplayName()) && depositAmt.compareTo(BigDecimal.ZERO) > 0){
+				/** Income **/
+				populateTransactionMap(categoryTotalMap, categoryMonthlyMap, transactionsMap, category, transaction, depositAmt);
 			}
 		}
 		
@@ -123,6 +110,30 @@ public class HDFCBankStatementReaderService implements BankStatementReaderServic
 		
 		return statementSummary;
 	}
+	
+	private void populateTransactionMap(Map<String, Map<String, BigDecimal>> categoryTotalMap, 
+			Map<String, BigDecimal> categoryMonthlyMap, Map<String, List<String>> transactionsMap,
+			String category,BankTransaction transaction, BigDecimal amt) {
+		if(!categoryTotalMap.containsKey(category)) {
+			categoryMonthlyMap = new HashMap<>();
+			categoryTotalMap.put(category, categoryMonthlyMap);
+		} else
+			categoryMonthlyMap = categoryTotalMap.get(category);
+		String monthYear = BankTransactionUtil.getMonthYear(transaction.getValueDate());
+		if(!categoryMonthlyMap.containsKey(monthYear))
+			categoryMonthlyMap.put(monthYear, BigDecimal.ZERO);
+		categoryMonthlyMap.put(monthYear, amt.add(categoryMonthlyMap.get(monthYear)));
+		List<String> transList = transactionsMap.get(category);
+		if(CollectionUtils.isEmpty(transList)) {
+			transList = new ArrayList<>();
+		}
+		String tranNarration = transaction.getNarration() + SPACE
+				+ transaction.getValueDate() + SPACE 
+				+ transaction.getWithdrawalAmount();
+		transList.add(tranNarration);
+		transactionsMap.put(category, transList);
+	}
+	
 
 	@Override
 	public CategoryEnum getCategoryFromNarration(String narration) {
