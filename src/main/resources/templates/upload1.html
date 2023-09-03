@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Credit Card Statement Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #337ab7;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #337ab7;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .transactions {
+            display: none;
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        button {
+            background-color: #337ab7;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #23527c;
+        }
+        
+        .red-text {
+    		color: red;
+		}
+    </style>
+</head>
+<body>
+    <h1>Upload Credit Card Statement</h1>
+    <form th:action="@{/upload1}" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" />
+		<br/>
+	    <label for="password">Enter Password for PDF(Optional):</label>
+	    <input type="password" name="password" id="password" />
+	    <p th:if="${message}" style="color: red;">[[${message}]]</p>
+	    <br/>
+        <input type="submit" value="Upload" />
+    </form>
+    <div th:if="${statementSummary != null}">
+        <h2>Category Totals</h2>
+        <table>
+            <tr>
+                <th>Category</th>
+                <!-- Loop through the monthYearKeys to display each month/year -->
+                <th th:each="monthYear : ${monthYearKeys}">
+                    <span th:text="${monthYear}" />
+                </th>
+                <th>Transactions</th>
+            </tr>
+            <!-- Iterate through each category entry -->
+            
+			<tr th:each="categoryEntry : ${statementSummary.categoryTotalMap}">
+			    <td th:text="${categoryEntry.key}" />
+			    <td th:each="monthYear : ${monthYearKeys}">
+			        <!-- Use the #with directive to handle null values more gracefully -->
+			        <span th:with="innerMap=${categoryEntry.value}">
+			            <span th:each="monthEntry : ${innerMap}">
+							<span th:if="${monthEntry.key == monthYear}">
+								<span>&#8377;</span>
+								<span th:text="${monthEntry.value}" />
+							</span>          
+			            </span>
+			        </span>
+			    </td>
+                <td>
+                    <button th:attr="data-target='#transactions-' + ${categoryEntry.key}" onclick="toggleTransactions(this)">Show Transactions</button>
+                    <ul class="transactions" th:id="'transactions-' + ${categoryEntry.key}">
+                        <!-- Loop through the transactions for the current category -->
+                        <li th:each="transaction : ${statementSummary.transactionsMap[categoryEntry.key]}">
+                            <span th:text="${transaction}" />
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        
+    </div>
+
+    <script>
+        function toggleTransactions(button) {
+            var targetId = button.getAttribute("data-target");
+            var transactions = document.querySelector(targetId);
+            if (transactions.style.display === "none") {
+                transactions.style.display = "block";
+                button.textContent = "Hide Transactions";
+            } else {
+                transactions.style.display = "none";
+                button.textContent = "Show Transactions";
+            }
+        }
+    </script>
+</body>
+</html>
