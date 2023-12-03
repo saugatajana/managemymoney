@@ -3,6 +3,8 @@ package com.anw.managemymoney.enums;
 public enum CategoryEnum {
     SHOPPING("shopping"),
     GROCERY("grocery"),
+    VEGETABLES("vegetables"),
+    MEATANDFISH("meatandfish"),
     RESTAURANTS("restaurants"),
     BILLS("bills"),
     TRAVEL("travel"),
